@@ -13,9 +13,9 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Identificador que define qual objeto está sendo desenhado no momento
-#define SPHERE 0
-#define BUNNY  1
-#define PLANE  2
+#define PARKING 0
+#define CAR  1
+#define SPOT  2
 uniform int object_id;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
@@ -27,9 +27,6 @@ void main()
     // sistema de coordenadas da câmera.
     vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 camera_position = inverse(view) * origin;
-
-    vec4 sentido = normalize(vec4(0.0,-1.0,0.0,0.0));
-    vec4 posicao = vec4(0.0, 2.0, 1.0, 1.0);
 
     // O fragmento atual é coberto por um ponto que percente à superfície de um
     // dos objetos virtuais da cena. Este ponto, p, possui uma posição no
@@ -43,7 +40,7 @@ void main()
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(posicao - p);
+    vec4 l = normalize(vec4(1.0,1.0,0.5,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
@@ -57,28 +54,25 @@ void main()
     vec3 Ka; // Refletância ambiente
     float q; // Expoente especular para o modelo de iluminação de Phong
 
-    if ( object_id == SPHERE )
+    if ( object_id == PARKING )
     {
-        // PREENCHA AQUI
-        // Propriedades espectrais da esfera
-        Kd = vec3(0.8,0.4,0.08);
+        // Propriedades espectrais do estacionamento
+        Kd = vec3(0.5,0.5,0.5);
         Ks = vec3(0.0,0.0,0.0);
         Ka = Kd/2;
         q = 1.0;
     }
-    else if ( object_id == BUNNY )
+    else if ( object_id == CAR )
     {
-        // PREENCHA AQUI
-        // Propriedades espectrais do coelho
+        // Propriedades espectrais do carro
         Kd = vec3(0.08,0.4,0.8);
         Ks = vec3(0.8,0.8,0.8);
         Ka = Kd/2;
         q = 32.0;
     }
-    else if ( object_id == PLANE )
+    else if ( object_id == SPOT )
     {
-        // PREENCHA AQUI
-        // Propriedades espectrais do plano
+        // Propriedades espectrais do spot de estacionamento
         Kd = vec3(0.2,0.2,0.2);
         Ks = vec3(0.3,0.3,0.3);
         Ka = vec3(0.0,0.0,0.0);;
@@ -94,12 +88,6 @@ void main()
 
     // Espectro da fonte de iluminação
     vec3 I = vec3(1.0,1.0,1.0); // PREENCH AQUI o espectro da fonte de luz
-    vec4 alpha = normalize(p - posicao);
-    vec4 beta = normalize(sentido);
-
-    if (dot(alpha, beta) < sqrt(3)/2) { // cosseno de 30 
-        I = vec3(0.0,0.0,0.0);
-    }
 
     // Espectro da luz ambiente
     vec3 Ia = vec3(0.2,0.2,0.2); // PREENCHA AQUI o espectro da luz ambiente
