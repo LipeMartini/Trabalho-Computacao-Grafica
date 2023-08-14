@@ -288,17 +288,17 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spheremodel("../../data/sphere.obj");
-    ComputeNormals(&spheremodel);
-    BuildTrianglesAndAddToVirtualScene(&spheremodel);
+    ObjModel car("../../data/car.obj");
+    ComputeNormals(&car);
+    BuildTrianglesAndAddToVirtualScene(&car);
 
-    ObjModel bunnymodel("../../data/bunny.obj");
-    ComputeNormals(&bunnymodel);
-    BuildTrianglesAndAddToVirtualScene(&bunnymodel);
+    ObjModel parking_lot("../../data/parking-lot.obj");
+    ComputeNormals(&parking_lot);
+    BuildTrianglesAndAddToVirtualScene(&parking_lot);
 
-    ObjModel planemodel("../../data/plane.obj");
-    ComputeNormals(&planemodel);
-    BuildTrianglesAndAddToVirtualScene(&planemodel);
+    ObjModel spot("../../data/spot.obj"); // local onde será estacionado o carro
+    ComputeNormals(&spot);
+    BuildTrianglesAndAddToVirtualScene(&spot);
 
     if ( argc > 1 )
     {
@@ -364,7 +364,7 @@ int main(int argc, char* argv[])
         // Note que, no sistema de coordenadas da câmera, os planos near e far
         // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
         float nearplane = -0.1f;  // Posição do "near plane"
-        float farplane  = -10.0f; // Posição do "far plane"
+        float farplane  = -50.0f; // Posição do "far plane"
 
         if (g_UsePerspectiveProjection)
         {
@@ -395,34 +395,39 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        #define SPHERE 0
-        #define BUNNY  1
-        #define PLANE  2
+        #define PARKING 0
+        #define CAR 1 
+        #define SPOT 2
 
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f);
+        // Desenhamos o modelo do estacionamento na origem
+        // A garagem se constitui de varios objetos, entao precisamos desenhar todos
+        model = Matrix_Translate(0.0f,0.0f,0.0f)
+              * Matrix_Scale(0.1f, 0.1f, 0.1f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
+        glUniform1i(g_object_id_uniform, PARKING);
+        DrawVirtualObject("Parking");
+        DrawVirtualObject("Cube.002");
+        DrawVirtualObject("Cube.001_Cube.003");
+        DrawVirtualObject("Cube.003_Cube.004");     
+        DrawVirtualObject("Cube.004_Cube.005");
+        DrawVirtualObject("Cube.005_Cube.006");
+        DrawVirtualObject("Cube.006_Cube.007");
 
-        // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f)
-              * Matrix_Rotate_Z(g_AngleZ)
-              * Matrix_Rotate_Y(g_AngleY)
-              * Matrix_Rotate_X(g_AngleX);
+        // Desenhamos o modelo do carro
+        // o carro se constitui de varios objetos, entao precisamos desenhar todos
+        model = Matrix_Translate(0.0f,1.535f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        DrawVirtualObject("the_bunny");
-
-        // Desenhamos o modelo do plano
-        model = Matrix_Translate(0.0f,-1.0f,0.0f)
-              * Matrix_Scale(2.0f, 1.0f, 2.0f);
+        glUniform1i(g_object_id_uniform, CAR);
+        DrawVirtualObject("Car");
+        DrawVirtualObject("Cylinder");
+        
+        // Desenhamos o spot onde o carro deve ser estacionado
+        model = Matrix_Translate(5.0f,0.05f,7.0f)
+              * Matrix_Scale(3.0f, 2.0f, 2.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
+        glUniform1i(g_object_id_uniform, SPOT);
         DrawVirtualObject("the_plane");
         
-
-
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
         TextRendering_ShowEulerAngles(window);
