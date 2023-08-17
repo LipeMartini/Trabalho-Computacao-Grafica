@@ -300,6 +300,18 @@ int main(int argc, char* argv[])
     ComputeNormals(&spot);
     BuildTrianglesAndAddToVirtualScene(&spot);
 
+    ObjModel tree("../../data/tree.obj"); 
+    ComputeNormals(&tree);
+    BuildTrianglesAndAddToVirtualScene(&tree);
+    
+    ObjModel bunny("../../data/bunny.obj"); 
+    ComputeNormals(&bunny);
+    BuildTrianglesAndAddToVirtualScene(&bunny);
+
+    ObjModel rock("../../data/rock.obj"); 
+    ComputeNormals(&rock);
+    BuildTrianglesAndAddToVirtualScene(&rock);
+
     if ( argc > 1 )
     {
         ObjModel model(argv[1]);
@@ -398,20 +410,18 @@ int main(int argc, char* argv[])
         #define PARKING 0
         #define CAR 1 
         #define SPOT 2
+        #define BUNNY 3
+        #define TREE 4
+        #define ROCK 5
+
 
         // Desenhamos o modelo do estacionamento na origem
-        // A garagem se constitui de varios objetos, entao precisamos desenhar todos
+        // o estacionamento é só um grande plano
         model = Matrix_Translate(0.0f,0.0f,0.0f)
-              * Matrix_Scale(0.1f, 0.1f, 0.1f);
+              * Matrix_Scale(50.0f, 1.0f, 50.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PARKING);
-        DrawVirtualObject("Parking");
-        DrawVirtualObject("Cube.002");
-        DrawVirtualObject("Cube.001_Cube.003");
-        DrawVirtualObject("Cube.003_Cube.004");     
-        DrawVirtualObject("Cube.004_Cube.005");
-        DrawVirtualObject("Cube.005_Cube.006");
-        DrawVirtualObject("Cube.006_Cube.007");
+        DrawVirtualObject("parking");
 
         // Desenhamos o modelo do carro
         // o carro se constitui de varios objetos, entao precisamos desenhar todos
@@ -427,6 +437,25 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPOT);
         DrawVirtualObject("the_plane");
+
+        // desenhamos os demais objetos da cena que serao usados como obstaculos do jogo
+        model = Matrix_Translate(7.0f,1.0f,3.0f)
+              * Matrix_Scale(1.0f, 1.0f, 1.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, BUNNY);
+        DrawVirtualObject("the_bunny");
+
+        model = Matrix_Translate(0.0f,3.0f,-5.0f)
+              * Matrix_Scale(2.5f, 2.5f, 2.5f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, TREE);
+        DrawVirtualObject("Object_farm_trees_rocks_flowers_D.jpg");
+
+        model = Matrix_Translate(-1.0f,0.0f, 4.0f)
+              * Matrix_Scale(2.0f, 2.0f, 2.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, ROCK);
+        DrawVirtualObject("Object_rock_brown_01_diffuse.jpg");
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.

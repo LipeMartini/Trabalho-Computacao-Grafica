@@ -16,6 +16,10 @@ uniform mat4 projection;
 #define PARKING 0
 #define CAR  1
 #define SPOT  2
+#define BUNNY  3
+#define TREE  4
+#define ROCK  5
+
 uniform int object_id;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
@@ -73,7 +77,31 @@ void main()
     else if ( object_id == SPOT )
     {
         // Propriedades espectrais do spot de estacionamento
-        Kd = vec3(0.2,0.2,0.2);
+        Kd = vec3(0.0,0.1,0.0);
+        Ks = vec3(0.3,0.3,0.3);
+        Ka = vec3(0.0,0.0,0.0);;
+        q = 10.0;
+    }
+    else if ( object_id == BUNNY )
+    {
+        // Propriedades espectrais do spot de estacionamento
+        Kd = vec3(0.2,0.1,0.5);
+        Ks = vec3(0.3,0.3,0.3);
+        Ka = vec3(0.0,0.0,0.0);;
+        q = 20.0;
+    }
+    else if ( object_id == TREE )
+    {
+        // Propriedades espectrais do spot de estacionamento
+        Kd = vec3(0.4,0.1,0.9);
+        Ks = vec3(0.3,0.3,0.3);
+        Ka = vec3(0.0,0.0,0.0);;
+        q = 1.0;
+    }
+    else if ( object_id == ROCK )
+    {
+        // Propriedades espectrais do spot de estacionamento
+        Kd = vec3(0.3,0.6,0.12);
         Ks = vec3(0.3,0.3,0.3);
         Ka = vec3(0.0,0.0,0.0);;
         q = 20.0;
@@ -98,8 +126,10 @@ void main()
     // Termo ambiente
     vec3 ambient_term = Ka*Ia; // PREENCHA AQUI o termo ambiente
 
-    // Termo especular utilizando o modelo de iluminação de Phong
-    vec3 phong_specular_term  = Ks*I*pow(max(0, dot(r,v)), q); // PREENCH AQUI o termo especular de Phong
+    // Termo especular utilizando o modelo de iluminação Blinn-Phong
+    vec4 h = (v+l);
+    h = normalize(h);
+    vec3 phong_specular_term  = Ks*I*pow(max(0, dot(n,h)), q); // PREENCH AQUI o termo especular de Phong
 
     // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
     // necessário:
