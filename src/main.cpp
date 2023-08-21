@@ -300,15 +300,15 @@ int main(int argc, char* argv[])
     ComputeNormals(&spot);
     BuildTrianglesAndAddToVirtualScene(&spot);
 
-    ObjModel tree("../../data/tree.obj"); 
+    ObjModel tree("../../data/tree.obj");
     ComputeNormals(&tree);
     BuildTrianglesAndAddToVirtualScene(&tree);
-    
-    ObjModel bunny("../../data/bunny.obj"); 
+
+    ObjModel bunny("../../data/bunny.obj");
     ComputeNormals(&bunny);
     BuildTrianglesAndAddToVirtualScene(&bunny);
 
-    ObjModel rock("../../data/rock.obj"); 
+    ObjModel rock("../../data/rock.obj");
     ComputeNormals(&rock);
     BuildTrianglesAndAddToVirtualScene(&rock);
 
@@ -408,7 +408,7 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
         #define PARKING 0
-        #define CAR 1 
+        #define CAR 1
         #define SPOT 2
         #define BUNNY 3
         #define TREE 4
@@ -425,12 +425,20 @@ int main(int argc, char* argv[])
 
         // Desenhamos o modelo do carro
         // o carro se constitui de varios objetos, entao precisamos desenhar todos
-        model = Matrix_Translate(0.0f,1.535f,0.0f);
+        model = Matrix_Translate(0.0f,0.0f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, CAR);
-        DrawVirtualObject("Car");
-        DrawVirtualObject("Cylinder");
-        
+        DrawVirtualObject("Mesh1 Group1 Model");
+        DrawVirtualObject("Mesh2 Group2 Model");
+        DrawVirtualObject("Mesh3 Group3 Model");
+        DrawVirtualObject("Mesh4 Group4 Model");
+        DrawVirtualObject("Mesh5 Group5 Model");
+        DrawVirtualObject("Mesh6 Group6 Model");
+        DrawVirtualObject("Mesh7 Group7 Model");
+        DrawVirtualObject("Mesh8 Group8 Model");
+        DrawVirtualObject("Mesh9 Group9 Model");
+        DrawVirtualObject("Mesh10 Group10 Model");
+
         // Desenhamos o spot onde o carro deve ser estacionado
         model = Matrix_Translate(5.0f,0.05f,7.0f)
               * Matrix_Scale(3.0f, 2.0f, 2.0f);
@@ -456,7 +464,7 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, ROCK);
         DrawVirtualObject("Object_rock_brown_01_diffuse.jpg");
-        
+
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
         TextRendering_ShowEulerAngles(window);
@@ -615,7 +623,7 @@ void ComputeNormals(ObjModel* model)
 
             const glm::vec4  a = vertices[0];
             const glm::vec4  b = vertices[1];
-            const glm::vec4  c = vertices[2]; 
+            const glm::vec4  c = vertices[2];
 
             // PREENCHA AQUI o cálculo da normal de um triângulo cujos vértices
             // estão nos pontos "a", "b", e "c", definidos no sentido anti-horário.
@@ -917,7 +925,7 @@ GLuint CreateGpuProgram(GLuint vertex_shader_id, GLuint fragment_shader_id)
         fprintf(stderr, "%s", output.c_str());
     }
 
-    // Os "Shader Objects" podem ser marcados para deleção após serem linkados 
+    // Os "Shader Objects" podem ser marcados para deleção após serem linkados
     glDeleteShader(vertex_shader_id);
     glDeleteShader(fragment_shader_id);
 
@@ -1019,21 +1027,21 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
-    
+
         // Atualizamos parâmetros da câmera com os deslocamentos
         g_CameraTheta -= 0.01f*dx;
         g_CameraPhi   += 0.01f*dy;
-    
+
         // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
         float phimax = 3.141592f/2;
         float phimin = -phimax;
-    
+
         if (g_CameraPhi > phimax)
             g_CameraPhi = phimax;
-    
+
         if (g_CameraPhi < phimin)
             g_CameraPhi = phimin;
-    
+
         // Atualizamos as variáveis globais para armazenar a posição atual do
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
@@ -1045,11 +1053,11 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
-    
+
         // Atualizamos parâmetros da antebraço com os deslocamentos
         g_ForearmAngleZ -= 0.01f*dx;
         g_ForearmAngleX += 0.01f*dy;
-    
+
         // Atualizamos as variáveis globais para armazenar a posição atual do
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
@@ -1061,11 +1069,11 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
         float dx = xpos - g_LastCursorPosX;
         float dy = ypos - g_LastCursorPosY;
-    
+
         // Atualizamos parâmetros da antebraço com os deslocamentos
         g_TorsoPositionX += 0.01f*dx;
         g_TorsoPositionY -= 0.01f*dy;
-    
+
         // Atualizamos as variáveis globais para armazenar a posição atual do
         // cursor como sendo a última posição conhecida do cursor.
         g_LastCursorPosX = xpos;
@@ -1292,7 +1300,7 @@ void TextRendering_ShowFramesPerSecond(GLFWwindow* window)
     if ( ellapsed_seconds > 1.0f )
     {
         numchars = snprintf(buffer, 20, "%.2f fps", ellapsed_frames / ellapsed_seconds);
-    
+
         old_seconds = seconds;
         ellapsed_frames = 0;
     }
