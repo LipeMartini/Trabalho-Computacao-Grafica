@@ -36,6 +36,9 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
+uniform sampler2D TextureImage3;
+uniform sampler2D TextureImage4;
+uniform sampler2D TextureImage5;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -83,12 +86,6 @@ void main()
 
     if ( object_id == PARKING )
     {
-        /* // Propriedades espectrais do estacionamento
-        Kd = vec3(0.5,0.5,0.5);
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = Kd/2;
-        q = 1.0; */
-
         float minx = bbox_min.x;
         float maxx = bbox_max.x;
 
@@ -98,48 +95,144 @@ void main()
         float minz = bbox_min.z;
         float maxz = bbox_max.z;
 
-        U = (position_model.x - minx) / (maxx - minx);
-        V = (position_model.y - miny) / (maxy - miny);
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else if ( object_id == CAR )
     {
-        // Propriedades espectrais do carro
-        Kd = vec3(0.08,0.4,0.8);
-        Ks = vec3(0.8,0.8,0.8);
-        Ka = Kd/2;
-        q = 32.0;
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else if ( object_id == SPOT )
     {
-        // Propriedades espectrais do spot de estacionamento
-        Kd = vec3(0.0,0.1,0.0);
-        Ks = vec3(0.3,0.3,0.3);
-        Ka = vec3(0.0,0.0,0.0);;
-        q = 10.0;
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage5, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else if ( object_id == BUNNY )
     {
-        // Propriedades espectrais do spot de estacionamento
-        Kd = vec3(0.2,0.1,0.5);
-        Ks = vec3(0.3,0.3,0.3);
-        Ka = vec3(0.0,0.0,0.0);;
-        q = 20.0;
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else if ( object_id == TREE )
     {
-        // Propriedades espectrais do spot de estacionamento
-        Kd = vec3(0.4,0.1,0.9);
-        Ks = vec3(0.3,0.3,0.3);
-        Ka = vec3(0.0,0.0,0.0);;
-        q = 1.0;
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage4, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else if ( object_id == ROCK )
     {
-        // Propriedades espectrais do spot de estacionamento
-        Kd = vec3(0.3,0.6,0.12);
-        Ks = vec3(0.3,0.3,0.3);
-        Ka = vec3(0.0,0.0,0.0);;
-        q = 20.0;
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+
+        float px = (position_model.x - minx) / (maxx - minx);
+        float pz = (position_model.z - minz) / (maxz - minz);
+
+        U = px;
+        V = pz;
+
+        vec3 Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.01);
+        color.a = 1;
+        color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
+
+        return;
     }
     else // Objeto desconhecido = preto
     {
