@@ -227,9 +227,13 @@ bool acelera = false;
 bool viraEsquerda = false;
 bool re = false; // ré
 bool viraDireita = false;
+float carY= 0.0f;
+float carZ= 0.0f;
+float carX= 0.0f;
+float carTheta= 0.0f;
 
 glm::mat4 carModel = Matrix_Identity();
-glm::vec3 velocidade = glm::vec3(0.0f, 0.0f, 1.0f);
+glm::vec4 direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
 
 int main(int argc, char* argv[])
 {
@@ -453,13 +457,26 @@ int main(int argc, char* argv[])
         float tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro 
         float deltaT = tnow - tprev;
         tprev = tnow;
-
+        
         if(acelera) { // se a tecla W estiver apertada anda para frente
-            carModel += Matrix_Translate(0.0f,0.0f,1.0f)*deltaT;
+            carZ += direcao[2]*deltaT;
+            carX -= direcao[0]*deltaT;
         }
         if(re) { // se a tecla D estiver apertada da ré
-            carModel += Matrix_Translate(0.0f,0.0f,1.0f)*deltaT;
+            carZ -= direcao[2]*deltaT;
+            carX += direcao[0]*deltaT;
         }
+        carModel = Matrix_Translate(carX, carY, carZ);
+        if(viraDireita) {
+            carTheta -= 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+        }
+        if(viraEsquerda){
+            carTheta += 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+        }
+        carModel *= Matrix_Rotate_Y(carTheta);
+        //carModel = Matrix_Translate(carX, carY, carZ);
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(carModel));
         glUniform1i(g_object_id_uniform, CAR);
