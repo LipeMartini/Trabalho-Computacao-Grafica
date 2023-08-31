@@ -223,6 +223,18 @@ GLint g_object_id_uniform;
 GLint bbox_min_uniform;
 GLint bbox_max_uniform;
 
+bool acelera = false;
+bool viraEsquerda = false;
+bool re = false; // ré
+bool viraDireita = false;
+float carY= 0.0f;
+float carZ= 0.0f;
+float carX= 0.0f;
+float carTheta= 0.0f;
+
+glm::mat4 carModel = Matrix_Identity();
+glm::vec4 direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -345,6 +357,7 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    static float tprev = (float)glfwGetTime(); // para controlar a animaçâo do carro 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -439,11 +452,40 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, PARKING);
         DrawVirtualObject("parking");
 
+        // **** MODELO DO CARRO ****** //
+        // animaçâo do carro
+        float tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro 
+        float deltaT = tnow - tprev;
+        tprev = tnow;
+        
+        if(acelera) { // se a tecla W estiver apertada anda para frente
+            carZ += direcao[2]*deltaT;
+            carX -= direcao[0]*deltaT;
+        }
+        if(re) { // se a tecla D estiver apertada da ré
+            carZ -= direcao[2]*deltaT;
+            carX += direcao[0]*deltaT;
+        }
+        carModel = Matrix_Translate(carX, carY, carZ);
+        if(viraDireita) {
+            carTheta -= 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+        }
+        if(viraEsquerda){
+            carTheta += 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+        }
+        carModel *= Matrix_Rotate_Y(carTheta);
+        //carModel = Matrix_Translate(carX, carY, carZ);
+
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(carModel));
+        glUniform1i(g_object_id_uniform, CAR);
+        /* model = Matrix_Translate(0.0f,0.0f,0.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, CAR); */
+
         // Desenhamos o modelo do carro
         // o carro se constitui de varios objetos, entao precisamos desenhar todos
-        model = Matrix_Translate(0.0f,0.0f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, CAR);
         DrawVirtualObject("Mesh1 Group1 Model");
         DrawVirtualObject("Mesh2 Group2 Model");
         DrawVirtualObject("Mesh3 Group3 Model");
@@ -1279,6 +1321,39 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         fprintf(stdout,"Shaders recarregados!\n");
         fflush(stdout);
     }
+
+    if (key == GLFW_KEY_W) {
+        if (action == GLFW_PRESS) {
+            acelera = true;
+        } else if (action == GLFW_RELEASE) {
+            acelera = false;
+        }
+    }
+
+    if (key == GLFW_KEY_A) {
+        if (action == GLFW_PRESS) {
+            viraEsquerda = true;
+        } else if (action == GLFW_RELEASE) {
+            viraEsquerda = false;
+        }
+    }
+
+    if (key == GLFW_KEY_S) {
+        if (action == GLFW_PRESS) {
+            re = true;
+        } else if (action == GLFW_RELEASE) {
+            re = false;
+        }
+    }
+
+    if (key == GLFW_KEY_D) {
+        if (action == GLFW_PRESS) {
+            viraDireita = true;
+        } else if (action == GLFW_RELEASE) {
+            viraDireita = false;
+        }
+    }
+
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
