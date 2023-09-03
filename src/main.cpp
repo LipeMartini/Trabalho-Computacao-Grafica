@@ -391,8 +391,8 @@ int main(int argc, char* argv[])
 
         // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
         // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        glm::vec4 camera_position_c  = glm::vec4(carX + direcao[0]*2, 10, carZ - direcao[2]*2, 1.0f); // Ponto "c", centro da câmera
+        glm::vec4 camera_lookat_l    = glm::vec4(carX,carY,carZ,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
         glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
         glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
@@ -437,10 +437,10 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        /* Testes de Colisão usando as AABBs*/
+        /* Testes de Colisão usando as AABBs (Axis-Aligned Bounding Boxes) */
         bool collision = false;
         bool well_parked = false;
-        // Calculando a bbox do carro que é composto de múltiplos objetos
+        // Calculando a bbox do carro, que é composto de múltiplos objetos
         std::vector<tinyobj::shape_t> shapes = car.shapes;
         glm::vec3 car_bbox_min = g_VirtualScene[car.shapes[0].name].bbox_min;
         glm::vec3 car_bbox_max = g_VirtualScene[car.shapes[0].name].bbox_max;
@@ -464,14 +464,34 @@ int main(int argc, char* argv[])
                 car_bbox_max.z = g_VirtualScene[car.shapes[shape].name].bbox_max.z;
             }
         }
-        //car_bbox_min += (carX, carY, carZ);
-        //car_bbox_max += (carX, carY, carZ);
-        car_bbox_min.x *= 1.5f;
-        car_bbox_max.x *= 1.5f;
-        /*car_bbox_min.y *= 1.5f;
-        car_bbox_max.y *= 1.5f;
-        car_bbox_min.z *= 1.5f;
-        car_bbox_max.z *= 1.5f;*/
+
+        // Rotacionando a bbox do carro de acordo com sua direção atual
+        //car_bbox_min = rotationY_bbox(carTheta)*car_bbox_min;
+        //car_bbox_max = rotationY_bbox(carTheta)*car_bbox_max;
+        glm::vec3 car_bbox_min_rotated;
+        glm::vec3 car_bbox_max_rotated;
+        car_bbox_min_rotated.x = car_bbox_min.x * cos(carTheta) + car_bbox_min.z * sin(carTheta);
+        car_bbox_min_rotated.y = car_bbox_min.y;
+        car_bbox_min_rotated.z = -car_bbox_min.x * sin(carTheta) + car_bbox_min.z * cos(carTheta);
+        car_bbox_max_rotated.x = car_bbox_max.x * cos(carTheta) + car_bbox_max.z * sin(carTheta);
+        car_bbox_max_rotated.y = car_bbox_max.y;
+        car_bbox_max_rotated.z = -car_bbox_max.x * sin(carTheta) + car_bbox_max.z * cos(carTheta);
+        if (car_bbox_min_rotated.x <= car_bbox_max_rotated.x) {
+            car_bbox_min.x = car_bbox_min_rotated.x;
+            car_bbox_max.x = car_bbox_max_rotated.x;
+        } else {
+            car_bbox_min.x = car_bbox_max_rotated.x;
+            car_bbox_max.x = car_bbox_min_rotated.x;
+        }
+        if (car_bbox_min_rotated.z <= car_bbox_max_rotated.z) {
+            car_bbox_min.z = car_bbox_min_rotated.z;
+            car_bbox_max.z = car_bbox_max_rotated.z;
+        } else {
+            car_bbox_min.z = car_bbox_max_rotated.z;
+            car_bbox_max.z = car_bbox_min_rotated.z;
+        }
+
+
         // Translacionando a bbox para a posição do carro na cena
         car_bbox_min.x += carX;
         car_bbox_min.y += carY;
@@ -479,6 +499,7 @@ int main(int argc, char* argv[])
         car_bbox_max.x += carX;
         car_bbox_max.y += carY;
         car_bbox_max.z += carZ;
+
         // Calculando as bbox dos demais objetos
         glm::vec3 spot_bbox_min = g_VirtualScene[spot.shapes[0].name].bbox_min;// + (5.0f,0.05f,7.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
@@ -489,6 +510,7 @@ int main(int argc, char* argv[])
         spot_bbox_min.x += 5.0f;
         spot_bbox_min.y += 0.05f;
         spot_bbox_min.z += 7.0f;
+
         glm::vec3 spot_bbox_max = g_VirtualScene[spot.shapes[0].name].bbox_max;// + (5.0f,0.05f,7.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         spot_bbox_max.x *= 3.0f;
@@ -498,6 +520,7 @@ int main(int argc, char* argv[])
         spot_bbox_max.x += 5.0f;
         spot_bbox_max.y += 0.05f;
         spot_bbox_max.z += 7.0f;
+
         glm::vec3 tree_bbox_min = g_VirtualScene[tree.shapes[0].name].bbox_min;// + (0.0f,3.0f,-5.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         tree_bbox_min.x *= 2.5f;
@@ -507,6 +530,7 @@ int main(int argc, char* argv[])
         tree_bbox_min.x += 0.0f;
         tree_bbox_min.y += 3.0f;
         tree_bbox_min.z += -5.0f;
+
         glm::vec3 tree_bbox_max = g_VirtualScene[tree.shapes[0].name].bbox_max;// + (0.0f,3.0f,-5.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         tree_bbox_max.x *= 2.5f;
@@ -516,6 +540,7 @@ int main(int argc, char* argv[])
         tree_bbox_max.x += 0.0f;
         tree_bbox_max.y += 3.0f;
         tree_bbox_max.z += -5.0f;
+
         glm::vec3 bunny_bbox_min = g_VirtualScene[bunny.shapes[0].name].bbox_min;// + (7.0f,1.0f,3.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         bunny_bbox_min.x *= 1.0f;
@@ -525,6 +550,7 @@ int main(int argc, char* argv[])
         bunny_bbox_min.x += 7.0f;
         bunny_bbox_min.y += 1.0f;
         bunny_bbox_min.z += 3.0f;
+
         glm::vec3 bunny_bbox_max = g_VirtualScene[bunny.shapes[0].name].bbox_max;// + (7.0f,1.0f,3.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         bunny_bbox_max.x *= 1.0f;
@@ -534,6 +560,7 @@ int main(int argc, char* argv[])
         bunny_bbox_max.x += 7.0f;
         bunny_bbox_max.y += 1.0f;
         bunny_bbox_max.z += 3.0f;
+
         glm::vec3 rock_bbox_min = g_VirtualScene[rock.shapes[0].name].bbox_min;// + (-1.0f,2.0f, 6.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         rock_bbox_min.x *= 2.0f;
@@ -543,6 +570,7 @@ int main(int argc, char* argv[])
         rock_bbox_min.x += -1.0f;
         rock_bbox_min.y += 2.0f;
         rock_bbox_min.z += 6.0f;
+
         glm::vec3 rock_bbox_max = g_VirtualScene[rock.shapes[0].name].bbox_max;// + (-1.0f,2.0f, 6.0f);
         // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
         rock_bbox_max.x *= 2.0f;
@@ -554,22 +582,22 @@ int main(int argc, char* argv[])
         rock_bbox_max.z += 6.0f;
 
         // Testando as colisões com os objetos "parking_spot", "tree", "bunny" e "rock"
-        if (car_bbox_min.x <= spot_bbox_max.x &&                                        // esse if só testa a colisão entre as bbox do carro e do spot
+        /*if (car_bbox_min.x <= spot_bbox_max.x &&                                        // esse if só testa a colisão entre as bbox do carro e do spot
             car_bbox_max.x >= spot_bbox_min.x &&
             //car_bbox_min.y <= spot_bbox_max.y &&
             //car_bbox_max.y >= spot_bbox_min.y &&
             car_bbox_min.z <= spot_bbox_max.z &&
             car_bbox_max.z >= spot_bbox_min.z)
                                                 {
-            well_parked = true;
-        /*if (car_bbox_min.x >= spot_bbox_min.x &&                                      // esse if deveria testar se o carro está todo dentro da bbox do spot, mas n consegui fazer esse teste funcionar ainda
+            well_parked = true;*/
+        if (car_bbox_min.x >= spot_bbox_min.x &&
             car_bbox_max.x <= spot_bbox_max.x &&
             //car_bbox_min.y <= spot_bbox_max.y &&
             //car_bbox_max.y >= spot_bbox_min.y &&
             car_bbox_min.z >= spot_bbox_min.z &&
             car_bbox_max.z <= spot_bbox_max.z)
                                                 {
-            well_parked = true;*/
+            well_parked = true;
         }else if (car_bbox_min.x <= tree_bbox_max.x &&
                   car_bbox_max.x >= tree_bbox_min.x &&
                   //car_bbox_min.y <= tree_bbox_max.y &&
@@ -596,9 +624,12 @@ int main(int argc, char* argv[])
             collision = true;
         }
 
-        printf("\nColidiu = %s", collision?"true":"false");
-        //printf("\nColidiu = %d", collision);
+        printf("\nColidiu = %d", collision);
         printf("\nEstacionado = %s", well_parked?"true":"false");
+        /*printf("\n carmin.x: %f   carmax.x: %f", car_bbox_min.x, car_bbox_max.x);
+        printf("\n carmin.z: %f   carmax.z: %f", car_bbox_min.z, car_bbox_max.z);
+        printf("\n spotmin.x: %f   spotmax.x: %f", spot_bbox_min.x, spot_bbox_max.x);
+        printf("\n spotmin.z: %f   spotmax.z: %f", spot_bbox_min.z, spot_bbox_max.z);*/
 
 
         #define PARKING 0
@@ -626,20 +657,36 @@ int main(int argc, char* argv[])
         if(acelera) { // se a tecla W estiver apertada anda para frente
             carZ += direcao[2]*deltaT;
             carX -= direcao[0]*deltaT;
+            if(viraDireita) {
+            carTheta -= 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            }
+            if(viraEsquerda){
+                carTheta += 1.0f*deltaT;
+                direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            }
         }
         if(re) { // se a tecla D estiver apertada da ré
             carZ -= direcao[2]*deltaT;
             carX += direcao[0]*deltaT;
+            if(viraDireita) {
+            carTheta += 1.0f*deltaT;
+            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            }
+            if(viraEsquerda){
+                carTheta -= 1.0f*deltaT;
+                direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            }
         }
         carModel = Matrix_Translate(carX, carY, carZ);
-        if(viraDireita) {
+        /*if(viraDireita) {
             carTheta -= 1.0f*deltaT;
             direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
         }
         if(viraEsquerda){
             carTheta += 1.0f*deltaT;
             direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
-        }
+        }*/
         carModel *= Matrix_Rotate_Y(carTheta);
         //carModel = Matrix_Translate(carX, carY, carZ);
 
