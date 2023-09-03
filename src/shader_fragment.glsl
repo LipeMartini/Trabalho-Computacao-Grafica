@@ -126,7 +126,7 @@ void main()
         U = px;
         V = pz;
 
-        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
+        vec3 Kd0 = texture(TextureImage3, texcoords).rgb;
         float lambert = max(0,dot(n,l));
         color.rgb = Kd0 * (lambert + 0.01);
         color.a = 1;

@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/asfalto.jpg"); // textura do asfalto                               TextureImage0
     LoadTextureImage("../../data/rocha.jpg"); // textura do jeep                                    TextureImage1
     LoadTextureImage("../../data/bunnyTexture.jpg"); // textura do coelho                           TextureImage2
-    LoadTextureImage("../../data/tc-earth_daymap_surface.jpg"); // textura do Jeep improvisada      TextureImage3
+    LoadTextureImage("../../data/car_jeep_ren.jpg"); // textura do Jeep improvisada      TextureImage3
     LoadTextureImage("../../data/tree.jpg"); // textura da árvore                                   TextureImage4
     LoadTextureImage("../../data/grass.jpg"); // textura da grama                                   TextureImage5
 
