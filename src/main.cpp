@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <stdbool.h>
 
 // Headers abaixo são específicos de C++
 #include <map>
@@ -308,12 +309,12 @@ int main(int argc, char* argv[])
     //
     LoadShadersFromFiles();
 
-    LoadTextureImage("../../data/asfalto.jpg"); // imagem do asfalto
-    LoadTextureImage("../../data/rocha.jpg"); // imagem do jeep
-    LoadTextureImage("../../data/bunnyTexture.jpg"); // imagem do jeep
-    LoadTextureImage("../../data/tc-earth_daymap_surface.jpg"); // imagem do jeep
-    LoadTextureImage("../../data/tree.jpg"); // imagem do jeep
-    LoadTextureImage("../../data/grass.jpg"); // imagem do jeep
+    LoadTextureImage("../../data/asfalto.jpg"); // textura do asfalto                               TextureImage0
+    LoadTextureImage("../../data/rocha.jpg"); // textura do jeep                                    TextureImage1
+    LoadTextureImage("../../data/bunnyTexture.jpg"); // textura do coelho                           TextureImage2
+    LoadTextureImage("../../data/tc-earth_daymap_surface.jpg"); // textura do Jeep improvisada      TextureImage3
+    LoadTextureImage("../../data/tree.jpg"); // textura da árvore                                   TextureImage4
+    LoadTextureImage("../../data/grass.jpg"); // textura da grama                                   TextureImage5
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel car("../../data/car.obj");
@@ -357,7 +358,7 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    static float tprev = (float)glfwGetTime(); // para controlar a animaçâo do carro 
+    static float tprev = (float)glfwGetTime(); // para controlar a animaçâo do carro
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -436,6 +437,170 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
+        /* Testes de Colisão usando as AABBs*/
+        bool collision = false;
+        bool well_parked = false;
+        // Calculando a bbox do carro que é composto de múltiplos objetos
+        std::vector<tinyobj::shape_t> shapes = car.shapes;
+        glm::vec3 car_bbox_min = g_VirtualScene[car.shapes[0].name].bbox_min;
+        glm::vec3 car_bbox_max = g_VirtualScene[car.shapes[0].name].bbox_max;
+        for (size_t shape = 0; shape < shapes.size(); ++shape) {
+            if (g_VirtualScene[car.shapes[shape].name].bbox_min.x < car_bbox_min.x) {
+                car_bbox_min.x = g_VirtualScene[car.shapes[shape].name].bbox_min.x;
+            }
+            if (g_VirtualScene[car.shapes[shape].name].bbox_max.x > car_bbox_max.x) {
+                car_bbox_max.x = g_VirtualScene[car.shapes[shape].name].bbox_max.x;
+            }
+            if (g_VirtualScene[car.shapes[shape].name].bbox_min.y < car_bbox_min.y) {
+                car_bbox_min.y = g_VirtualScene[car.shapes[shape].name].bbox_min.y;
+            }
+            if (g_VirtualScene[car.shapes[shape].name].bbox_max.y > car_bbox_max.y) {
+                car_bbox_max.y = g_VirtualScene[car.shapes[shape].name].bbox_max.y;
+            }
+            if (g_VirtualScene[car.shapes[shape].name].bbox_min.z < car_bbox_min.z) {
+                car_bbox_min.z = g_VirtualScene[car.shapes[shape].name].bbox_min.z;
+            }
+            if (g_VirtualScene[car.shapes[shape].name].bbox_max.z > car_bbox_max.z) {
+                car_bbox_max.z = g_VirtualScene[car.shapes[shape].name].bbox_max.z;
+            }
+        }
+        //car_bbox_min += (carX, carY, carZ);
+        //car_bbox_max += (carX, carY, carZ);
+        car_bbox_min.x *= 1.5f;
+        car_bbox_max.x *= 1.5f;
+        /*car_bbox_min.y *= 1.5f;
+        car_bbox_max.y *= 1.5f;
+        car_bbox_min.z *= 1.5f;
+        car_bbox_max.z *= 1.5f;*/
+        // Translacionando a bbox para a posição do carro na cena
+        car_bbox_min.x += carX;
+        car_bbox_min.y += carY;
+        car_bbox_min.z += carZ;
+        car_bbox_max.x += carX;
+        car_bbox_max.y += carY;
+        car_bbox_max.z += carZ;
+        // Calculando as bbox dos demais objetos
+        glm::vec3 spot_bbox_min = g_VirtualScene[spot.shapes[0].name].bbox_min;// + (5.0f,0.05f,7.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        spot_bbox_min.x *= 3.0f;
+        spot_bbox_min.y *= 2.0f;
+        spot_bbox_min.z *= 2.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        spot_bbox_min.x += 5.0f;
+        spot_bbox_min.y += 0.05f;
+        spot_bbox_min.z += 7.0f;
+        glm::vec3 spot_bbox_max = g_VirtualScene[spot.shapes[0].name].bbox_max;// + (5.0f,0.05f,7.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        spot_bbox_max.x *= 3.0f;
+        spot_bbox_max.y *= 2.0f;
+        spot_bbox_max.z *= 2.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        spot_bbox_max.x += 5.0f;
+        spot_bbox_max.y += 0.05f;
+        spot_bbox_max.z += 7.0f;
+        glm::vec3 tree_bbox_min = g_VirtualScene[tree.shapes[0].name].bbox_min;// + (0.0f,3.0f,-5.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        tree_bbox_min.x *= 2.5f;
+        tree_bbox_min.y *= 2.5f;
+        tree_bbox_min.z *= 2.5f;
+        // Translacionando a bbox para a posição do objeto na cena
+        tree_bbox_min.x += 0.0f;
+        tree_bbox_min.y += 3.0f;
+        tree_bbox_min.z += -5.0f;
+        glm::vec3 tree_bbox_max = g_VirtualScene[tree.shapes[0].name].bbox_max;// + (0.0f,3.0f,-5.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        tree_bbox_max.x *= 2.5f;
+        tree_bbox_max.y *= 2.5f;
+        tree_bbox_max.z *= 2.5f;
+        // Translacionando a bbox para a posição do objeto na cena
+        tree_bbox_max.x += 0.0f;
+        tree_bbox_max.y += 3.0f;
+        tree_bbox_max.z += -5.0f;
+        glm::vec3 bunny_bbox_min = g_VirtualScene[bunny.shapes[0].name].bbox_min;// + (7.0f,1.0f,3.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        bunny_bbox_min.x *= 1.0f;
+        bunny_bbox_min.y *= 1.0f;
+        bunny_bbox_min.z *= 1.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        bunny_bbox_min.x += 7.0f;
+        bunny_bbox_min.y += 1.0f;
+        bunny_bbox_min.z += 3.0f;
+        glm::vec3 bunny_bbox_max = g_VirtualScene[bunny.shapes[0].name].bbox_max;// + (7.0f,1.0f,3.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        bunny_bbox_max.x *= 1.0f;
+        bunny_bbox_max.y *= 1.0f;
+        bunny_bbox_max.z *= 1.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        bunny_bbox_max.x += 7.0f;
+        bunny_bbox_max.y += 1.0f;
+        bunny_bbox_max.z += 3.0f;
+        glm::vec3 rock_bbox_min = g_VirtualScene[rock.shapes[0].name].bbox_min;// + (-1.0f,2.0f, 6.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        rock_bbox_min.x *= 2.0f;
+        rock_bbox_min.y *= 2.0f;
+        rock_bbox_min.z *= 2.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        rock_bbox_min.x += -1.0f;
+        rock_bbox_min.y += 2.0f;
+        rock_bbox_min.z += 6.0f;
+        glm::vec3 rock_bbox_max = g_VirtualScene[rock.shapes[0].name].bbox_max;// + (-1.0f,2.0f, 6.0f);
+        // Aplicando o mesmo Scale q é aplicado na hora de desenhar o objeto
+        rock_bbox_max.x *= 2.0f;
+        rock_bbox_max.y *= 2.0f;
+        rock_bbox_max.z *= 2.0f;
+        // Translacionando a bbox para a posição do objeto na cena
+        rock_bbox_max.x += -1.0f;
+        rock_bbox_max.y += 2.0f;
+        rock_bbox_max.z += 6.0f;
+
+        // Testando as colisões com os objetos "parking_spot", "tree", "bunny" e "rock"
+        if (car_bbox_min.x <= spot_bbox_max.x &&                                        // esse if só testa a colisão entre as bbox do carro e do spot
+            car_bbox_max.x >= spot_bbox_min.x &&
+            //car_bbox_min.y <= spot_bbox_max.y &&
+            //car_bbox_max.y >= spot_bbox_min.y &&
+            car_bbox_min.z <= spot_bbox_max.z &&
+            car_bbox_max.z >= spot_bbox_min.z)
+                                                {
+            well_parked = true;
+        /*if (car_bbox_min.x >= spot_bbox_min.x &&                                      // esse if deveria testar se o carro está todo dentro da bbox do spot, mas n consegui fazer esse teste funcionar ainda
+            car_bbox_max.x <= spot_bbox_max.x &&
+            //car_bbox_min.y <= spot_bbox_max.y &&
+            //car_bbox_max.y >= spot_bbox_min.y &&
+            car_bbox_min.z >= spot_bbox_min.z &&
+            car_bbox_max.z <= spot_bbox_max.z)
+                                                {
+            well_parked = true;*/
+        }else if (car_bbox_min.x <= tree_bbox_max.x &&
+                  car_bbox_max.x >= tree_bbox_min.x &&
+                  //car_bbox_min.y <= tree_bbox_max.y &&
+                  //car_bbox_max.y >= tree_bbox_min.y &&
+                  car_bbox_min.z <= tree_bbox_max.z &&
+                  car_bbox_max.z >= tree_bbox_min.z)
+                                                      {
+            collision = true;
+        }else if (car_bbox_min.x <= bunny_bbox_max.x &&
+                  car_bbox_max.x >= bunny_bbox_min.x &&
+                  //car_bbox_min.y <= bunny_bbox_max.y &&
+                  //car_bbox_max.y >= bunny_bbox_min.y &&
+                  car_bbox_min.z <= bunny_bbox_max.z &&
+                  car_bbox_max.z >= bunny_bbox_min.z)
+                                                      {
+            collision = true;
+        }else if (car_bbox_min.x <= rock_bbox_max.x &&
+                  car_bbox_max.x >= rock_bbox_min.x &&
+                  //car_bbox_min.y <= rock_bbox_max.y &&
+                  //car_bbox_max.y >= rock_bbox_min.y &&
+                  car_bbox_min.z <= rock_bbox_max.z &&
+                  car_bbox_max.z >= rock_bbox_min.z)
+                                                      {
+            collision = true;
+        }
+
+        printf("\nColidiu = %s", collision?"true":"false");
+        //printf("\nColidiu = %d", collision);
+        printf("\nEstacionado = %s", well_parked?"true":"false");
+
+
         #define PARKING 0
         #define CAR 1
         #define SPOT 2
@@ -454,10 +619,10 @@ int main(int argc, char* argv[])
 
         // **** MODELO DO CARRO ****** //
         // animaçâo do carro
-        float tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro 
+        float tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro
         float deltaT = tnow - tprev;
         tprev = tnow;
-        
+
         if(acelera) { // se a tecla W estiver apertada anda para frente
             carZ += direcao[2]*deltaT;
             carX -= direcao[0]*deltaT;
