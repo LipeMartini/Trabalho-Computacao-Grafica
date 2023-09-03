@@ -19,6 +19,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdbool.h>
+#include <iostream>
+#include<unistd.h>               // #include<windows.h> for windows
 
 // Headers abaixo são específicos de C++
 #include <map>
@@ -49,6 +51,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+
+#define PI 3.1415926535f
 
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
@@ -191,6 +196,10 @@ float g_AngleZ = 0.0f;
 bool g_LeftMouseButtonPressed = false;
 bool g_RightMouseButtonPressed = false; // Análogo para botão direito do mouse
 bool g_MiddleMouseButtonPressed = false; // Análogo para botão do meio do mouse
+bool g_UPKeyPressed = false;
+bool g_DownKeyPressed = false;
+bool g_LeftKeyPressed = false;
+bool g_RigthKeyPressed = false;
 
 // Variáveis que definem a câmera em coordenadas esféricas, controladas pelo
 // usuário através do mouse (veja função CursorPosCallback()). A posição
@@ -210,6 +219,9 @@ float g_TorsoPositionY = 0.0f;
 
 // Variável que controla o tipo de projeção utilizada: perspectiva ou ortográfica.
 bool g_UsePerspectiveProjection = true;
+
+// controla o tipo de camera
+bool g_UseFreeCamera = false;
 
 // Variável que controla se o texto informativo será mostrado na tela.
 bool g_ShowInfoText = true;
@@ -232,6 +244,10 @@ float carY= 0.0f;
 float carZ= 0.0f;
 float carX= 0.0f;
 float carTheta= 0.0f;
+
+float g_CamEixoX = 2.5f;
+float g_CamEixoY = 2.5f;
+float g_CamEixoZ = 2.5f;
 
 glm::mat4 carModel = Matrix_Identity();
 glm::vec4 direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
@@ -359,6 +375,8 @@ int main(int argc, char* argv[])
     glFrontFace(GL_CCW);
 
     static float tprev = (float)glfwGetTime(); // para controlar a animaçâo do carro
+    float tnow; // para controlar a animaçâo do carro
+    float deltaT = 0.01f;
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -389,12 +407,54 @@ int main(int argc, char* argv[])
         float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
         float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
 
+        float g_CameraThetaTecla = g_CameraTheta;
+        g_CameraThetaTecla -= PI/2;
+        float zTecla = r*cos(g_CameraPhi)*cos(g_CameraThetaTecla);
+        float xTecla = r*cos(g_CameraPhi)*sin(g_CameraThetaTecla);
+
+        glm::vec4 camera_position_c;
+        glm::vec4 camera_lookat_l;
+        glm::vec4 camera_view_vector;
+        glm::vec4 camera_up_vector;
+        
+        glm::vec4 camera_UP_e_Down;
+        glm::vec4 camera_Left_e_Rigth;
+
         // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
         // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(carX + direcao[0]*2, 10, carZ - direcao[2]*2, 1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(carX,carY,carZ,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        if (g_UseFreeCamera) {
+            camera_position_c  = glm::vec4(g_CamEixoX, g_CamEixoY, g_CamEixoZ, 1.0f); // Ponto "c", centro da câmera
+            camera_lookat_l    = glm::vec4(carX,carY,carZ,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+            camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
+            camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+
+            camera_UP_e_Down = camera_view_vector;
+            camera_Left_e_Rigth = glm::vec4(xTecla, y, zTecla, 0.0f);
+
+            if (g_UPKeyPressed) {
+                g_CamEixoX += camera_UP_e_Down.x * deltaT;
+                g_CamEixoY += camera_UP_e_Down.y * deltaT;
+                g_CamEixoZ += camera_UP_e_Down.z * deltaT;
+            }
+            if (g_LeftKeyPressed) {
+                g_CamEixoX -= camera_view_vector.z * deltaT;
+                g_CamEixoZ -= camera_view_vector.x * deltaT;
+            }
+            if (g_DownKeyPressed) {
+                g_CamEixoX -= camera_UP_e_Down.x * deltaT;
+                g_CamEixoY -= camera_UP_e_Down.y * deltaT;
+                g_CamEixoZ -= camera_UP_e_Down.z * deltaT;
+            }
+            if (g_RigthKeyPressed) {
+                g_CamEixoX += camera_view_vector.z * deltaT;
+                g_CamEixoZ += camera_view_vector.x * deltaT;
+            }
+        }else {
+            camera_position_c  = glm::vec4(carX + direcao[0]*2, 10, carZ - direcao[2]*2, 1.0f); // Ponto "c", centro da câmera
+            camera_lookat_l    = glm::vec4(carX,carY,carZ,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+            camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
+            camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f);
+        }
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -624,13 +684,28 @@ int main(int argc, char* argv[])
             collision = true;
         }
 
-        printf("\nColidiu = %d", collision);
-        printf("\nEstacionado = %s", well_parked?"true":"false");
-        /*printf("\n carmin.x: %f   carmax.x: %f", car_bbox_min.x, car_bbox_max.x);
-        printf("\n carmin.z: %f   carmax.z: %f", car_bbox_min.z, car_bbox_max.z);
-        printf("\n spotmin.x: %f   spotmax.x: %f", spot_bbox_min.x, spot_bbox_max.x);
-        printf("\n spotmin.z: %f   spotmax.z: %f", spot_bbox_min.z, spot_bbox_max.z);*/
-
+        if(collision) {
+            float pad = TextRendering_LineHeight(window);
+            TextRendering_PrintString(window, "GAME OVER, VOCE BATEU!!!!", -1.0f, 1.0f-4*pad, 1.0f);      
+            // tem que ter um sleep aqui ou algo do tipo. 
+            /* carModel = Matrix_Identity();
+            direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            carY= 0.0f;
+            carZ= 0.0f;
+            carX= 0.0f;
+            carTheta= 0.0f; */
+        }
+        if(well_parked) {
+            float pad = TextRendering_LineHeight(window);
+            TextRendering_PrintString(window, "Parabens, bem estacionado!!", -1.0f, 1.0f-4*pad, 1.0f);
+            // tem que ter um sleep aqui ou algo do tipo. 
+            /* carModel = Matrix_Identity();
+            direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
+            carY= 0.0f;
+            carZ= 0.0f;
+            carX= 0.0f;
+            carTheta= 0.0f; */
+        }
 
         #define PARKING 0
         #define CAR 1
@@ -650,8 +725,8 @@ int main(int argc, char* argv[])
 
         // **** MODELO DO CARRO ****** //
         // animaçâo do carro
-        float tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro
-        float deltaT = tnow - tprev;
+        tnow = (float)glfwGetTime(); // para controlar a animaçâo do carro
+        deltaT = tnow - tprev;
         tprev = tnow;
 
         if(acelera) { // se a tecla W estiver apertada anda para frente
@@ -1514,6 +1589,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_UsePerspectiveProjection = true;
     }
 
+    if (key == GLFW_KEY_N && action == GLFW_PRESS) {
+        g_UseFreeCamera = true;
+    }
+
+    if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+        g_UseFreeCamera = false;
+    }
+
     // Se o usuário apertar a tecla O, utilizamos projeção ortográfica.
     if (key == GLFW_KEY_O && action == GLFW_PRESS)
     {
@@ -1566,6 +1649,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         }
     }
 
+    // definição das teclas de mover a tela
+    if (key == GLFW_KEY_UP){
+        if(action == GLFW_PRESS) g_UPKeyPressed = true;
+        else if (action == GLFW_RELEASE) g_UPKeyPressed = false;
+    }
+
+    if (key == GLFW_KEY_DOWN){
+        if(action == GLFW_PRESS) g_DownKeyPressed = true;
+        else if (action == GLFW_RELEASE) g_DownKeyPressed = false;
+    }
+
+    if (key == GLFW_KEY_LEFT){
+        if(action == GLFW_PRESS) g_LeftKeyPressed = true;
+        else if (action == GLFW_RELEASE) g_LeftKeyPressed = false;
+    }
+
+    if (key == GLFW_KEY_RIGHT){
+        if(action == GLFW_PRESS) g_RigthKeyPressed = true;
+        else if (action == GLFW_RELEASE) g_RigthKeyPressed = false;
+    }
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
