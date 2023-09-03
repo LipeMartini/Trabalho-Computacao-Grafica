@@ -111,21 +111,6 @@ void main()
     }
     else if ( object_id == CAR )
     {
-        float minx = bbox_min.x;
-        float maxx = bbox_max.x;
-
-        float miny = bbox_min.y;
-        float maxy = bbox_max.y;
-
-        float minz = bbox_min.z;
-        float maxz = bbox_max.z;
-
-        float px = (position_model.x - minx) / (maxx - minx);
-        float pz = (position_model.z - minz) / (maxz - minz);
-
-        U = px;
-        V = pz;
-
         vec3 Kd0 = texture(TextureImage3, texcoords).rgb;
         float lambert = max(0,dot(n,l));
         color.rgb = Kd0 * (lambert + 0.01);
@@ -280,5 +265,4 @@ void main()
     // Cor final com correção gamma, considerando monitor sRGB.
     // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
-} 
-
+}

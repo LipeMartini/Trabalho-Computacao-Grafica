@@ -20,7 +20,6 @@
 #include <cstdlib>
 #include <stdbool.h>
 #include <iostream>
-#include<unistd.h>               // #include<windows.h> for windows
 
 // Headers abaixo são específicos de C++
 #include <map>
@@ -416,7 +415,7 @@ int main(int argc, char* argv[])
         glm::vec4 camera_lookat_l;
         glm::vec4 camera_view_vector;
         glm::vec4 camera_up_vector;
-        
+
         glm::vec4 camera_UP_e_Down;
         glm::vec4 camera_Left_e_Rigth;
 
@@ -526,8 +525,6 @@ int main(int argc, char* argv[])
         }
 
         // Rotacionando a bbox do carro de acordo com sua direção atual
-        //car_bbox_min = rotationY_bbox(carTheta)*car_bbox_min;
-        //car_bbox_max = rotationY_bbox(carTheta)*car_bbox_max;
         glm::vec3 car_bbox_min_rotated;
         glm::vec3 car_bbox_max_rotated;
         car_bbox_min_rotated.x = car_bbox_min.x * cos(carTheta) + car_bbox_min.z * sin(carTheta);
@@ -550,7 +547,6 @@ int main(int argc, char* argv[])
             car_bbox_min.z = car_bbox_max_rotated.z;
             car_bbox_max.z = car_bbox_min_rotated.z;
         }
-
 
         // Translacionando a bbox para a posição do carro na cena
         car_bbox_min.x += carX;
@@ -642,42 +638,26 @@ int main(int argc, char* argv[])
         rock_bbox_max.z += 6.0f;
 
         // Testando as colisões com os objetos "parking_spot", "tree", "bunny" e "rock"
-        /*if (car_bbox_min.x <= spot_bbox_max.x &&                                        // esse if só testa a colisão entre as bbox do carro e do spot
-            car_bbox_max.x >= spot_bbox_min.x &&
-            //car_bbox_min.y <= spot_bbox_max.y &&
-            //car_bbox_max.y >= spot_bbox_min.y &&
-            car_bbox_min.z <= spot_bbox_max.z &&
-            car_bbox_max.z >= spot_bbox_min.z)
-                                                {
-            well_parked = true;*/
         if (car_bbox_min.x >= spot_bbox_min.x &&
             car_bbox_max.x <= spot_bbox_max.x &&
-            //car_bbox_min.y <= spot_bbox_max.y &&
-            //car_bbox_max.y >= spot_bbox_min.y &&
             car_bbox_min.z >= spot_bbox_min.z &&
             car_bbox_max.z <= spot_bbox_max.z)
                                                 {
             well_parked = true;
         }else if (car_bbox_min.x <= tree_bbox_max.x &&
                   car_bbox_max.x >= tree_bbox_min.x &&
-                  //car_bbox_min.y <= tree_bbox_max.y &&
-                  //car_bbox_max.y >= tree_bbox_min.y &&
                   car_bbox_min.z <= tree_bbox_max.z &&
                   car_bbox_max.z >= tree_bbox_min.z)
                                                       {
             collision = true;
         }else if (car_bbox_min.x <= bunny_bbox_max.x &&
                   car_bbox_max.x >= bunny_bbox_min.x &&
-                  //car_bbox_min.y <= bunny_bbox_max.y &&
-                  //car_bbox_max.y >= bunny_bbox_min.y &&
                   car_bbox_min.z <= bunny_bbox_max.z &&
                   car_bbox_max.z >= bunny_bbox_min.z)
                                                       {
             collision = true;
         }else if (car_bbox_min.x <= rock_bbox_max.x &&
                   car_bbox_max.x >= rock_bbox_min.x &&
-                  //car_bbox_min.y <= rock_bbox_max.y &&
-                  //car_bbox_max.y >= rock_bbox_min.y &&
                   car_bbox_min.z <= rock_bbox_max.z &&
                   car_bbox_max.z >= rock_bbox_min.z)
                                                       {
@@ -685,26 +665,26 @@ int main(int argc, char* argv[])
         }
 
         if(collision) {
-            float pad = TextRendering_LineHeight(window);
-            TextRendering_PrintString(window, "GAME OVER, VOCE BATEU!!!!", -1.0f, 1.0f-4*pad, 1.0f);      
-            // tem que ter um sleep aqui ou algo do tipo. 
-            /* carModel = Matrix_Identity();
+            //float pad = TextRendering_LineHeight(window);
+            //TextRendering_PrintString(window, "GAME OVER, VOCE BATEU!!!!", -1.0f, 1.0f-4*pad, 1.0f);
+            printf("\nGAME OVER, VOCE BATEU!!!!");
+            carModel = Matrix_Identity();
             direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
             carY= 0.0f;
             carZ= 0.0f;
             carX= 0.0f;
-            carTheta= 0.0f; */
+            carTheta= 0.0f;
         }
         if(well_parked) {
-            float pad = TextRendering_LineHeight(window);
-            TextRendering_PrintString(window, "Parabens, bem estacionado!!", -1.0f, 1.0f-4*pad, 1.0f);
-            // tem que ter um sleep aqui ou algo do tipo. 
-            /* carModel = Matrix_Identity();
+            //float pad = TextRendering_LineHeight(window);
+            //TextRendering_PrintString(window, "Parabens, bem estacionado!!", -1.0f, 1.0f-4*pad, 1.0f);
+            printf("\nParabens, bem estacionado!!");
+            carModel = Matrix_Identity();
             direcao = glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
             carY= 0.0f;
             carZ= 0.0f;
             carX= 0.0f;
-            carTheta= 0.0f; */
+            carTheta= 0.0f;
         }
 
         #define PARKING 0
@@ -754,22 +734,10 @@ int main(int argc, char* argv[])
             }
         }
         carModel = Matrix_Translate(carX, carY, carZ);
-        /*if(viraDireita) {
-            carTheta -= 1.0f*deltaT;
-            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
-        }
-        if(viraEsquerda){
-            carTheta += 1.0f*deltaT;
-            direcao = rotationY(carTheta) * glm::vec4(0.0f, 0.0f, 5.0f, 0.0f);
-        }*/
         carModel *= Matrix_Rotate_Y(carTheta);
-        //carModel = Matrix_Translate(carX, carY, carZ);
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(carModel));
         glUniform1i(g_object_id_uniform, CAR);
-        /* model = Matrix_Translate(0.0f,0.0f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, CAR); */
 
         // Desenhamos o modelo do carro
         // o carro se constitui de varios objetos, entao precisamos desenhar todos
