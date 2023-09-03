@@ -24,7 +24,7 @@
 	<inttypes.h>
 	<stdint.h>
 
-1693700571 source:c:\users\pichau\desktop\facul\2023-1\fcg\trabalho final\trabalho-computacao-grafica\src\main.cpp
+1693767583 source:c:\users\pichau\desktop\facul\2023-1\fcg\trabalho final\trabalho-computacao-grafica\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -904,7 +904,7 @@
 1693513067 c:\users\pichau\desktop\facul\2023-1\fcg\trabalho final\trabalho-computacao-grafica\include\utils.h
 	<cstdio>
 
-1693513390 c:\users\pichau\desktop\facul\2023-1\fcg\trabalho final\trabalho-computacao-grafica\include\matrices.h
+1693766636 c:\users\pichau\desktop\facul\2023-1\fcg\trabalho final\trabalho-computacao-grafica\include\matrices.h
 	<cstdio>
 	<cstdlib>
 	<glm/mat4x4.hpp>
